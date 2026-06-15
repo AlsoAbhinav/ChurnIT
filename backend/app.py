@@ -503,7 +503,7 @@ def train_models():
     except Exception as e:
         return jsonify({'error': True, 'message': str(e)}), 400
 
-
+app = app 
 
 if __name__ == '__main__':
     app.run(debug=True)
