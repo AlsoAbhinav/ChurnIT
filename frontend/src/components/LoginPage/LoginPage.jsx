@@ -95,7 +95,6 @@ const LoginPage = () => {
         });
 
         const data = await response.json();
-
         if (data.success) {
           alert(data.message);
           setIsLogin(true); // Flip the form view automatically to show the Login form
