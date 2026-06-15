@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>churnIT - Model Training Results</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --card-bg: rgba(255, 255, 255, 0.1);
+            --card-hover-bg: rgba(255, 255, 255, 0.15);
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--light-color);
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background: rgba(44, 62, 80, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 0.5rem 1rem;
+            height: 8vh;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand:hover {
+            transform: scale(1.05);
+            color: var(--accent-color) !important;
+        }
+
+        .nav-link {
+            position: relative;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--accent-color);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-link:hover::after {
+            width: 80%;
+        }
+
+        .main-container {
+            padding: 2rem;
+            position: relative;
+        }
+
+        .hero-section {
+            min-height: 15vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .hero-content h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, var(--light-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .model-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .model-card:hover {
+            transform: translateY(-5px) scale(1.01);
+            background: var(--card-hover-bg);
+        }
+
+        .metric-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .plot-container {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .plot-container img {
+            max-width: 100%;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .plot-container:hover img {
+            transform: scale(1.02);
+        }
+
+        .btn-primary {
+            background: var(--secondary-color);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-color);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--primary-color);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+        }
+
+        .btn-secondary:hover {
+            background: var(--accent-color);
+            transform: translateY(-2px);
+        }
+
+        pre {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            color: var(--light-color);
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+            
+            .model-card {
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-chart-line me-2"></i>
+                churnIT
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            <i class="fas fa-home me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/analyze">
+                            <i class="fas fa-analytics me-1"></i> Analysis
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/predict">
+                            <i class="fas fa-magic me-1"></i> Predictions
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="hero-section">
+            <div class="hero-content">
+                <h1 class="animate__animated animate__fadeInDown">
+                    Model Training Results
+                </h1>
+                <p class="lead animate__animated animate__fadeInUp">
+                    Performance analysis of trained machine learning models
+                </p>
+            </div>
+        </div>
+
+        {% for result in results %}
+        <div class="model-card animate__animated animate__fadeIn">
+            <h3 class="mb-4">
+                <i class="fas fa-robot me-2"></i>
+                {{ result.model_name }}
+            </h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-chart-bar me-2"></i>Metrics:</h5>
+                    <div class="mt-3">
+                        <p>Validation Accuracy: <span class="metric-value">{{ "%.4f"|format(result.validation_accuracy) }}</span></p>
+                        <p>Precision: <span class="metric-value">{{ "%.4f"|format(result.precision) }}</span></p>
+                        <p>Recall: <span class="metric-value">{{ "%.4f"|format(result.recall) }}</span></p>
+                        <p>F1 Score: <span class="metric-value">{{ "%.4f"|format(result.f1) }}</span></p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h5><i class="fas fa-file-alt me-2"></i>Classification Report:</h5>
+                    <pre>{{ result.classification_report }}</pre>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="plot-container">
+                        <h5><i class="fas fa-th me-2"></i>Confusion Matrix:</h5>
+                        <img src="data:image/png;base64,{{ result.confusion_matrix_plot }}" alt="Confusion Matrix">
+                    </div>
+                </div>
+                {% if result.feature_importance_plot %}
+                <div class="col-md-6">
+                    <div class="plot-container">
+                        <h5><i class="fas fa-weight me-2"></i>Feature Importance:</h5>
+                        <img src="data:image/png;base64,{{ result.feature_importance_plot }}" alt="Feature Importance">
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="model-card animate__animated animate__fadeIn">
+            <h3 class="mb-4">
+                <i class="fas fa-chart-line me-2"></i>
+                Overall Model Performance
+            </h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="plot-container">
+                        <h5><i class="fas fa-bar-chart me-2"></i>Model Accuracies Comparison:</h5>
+                        <img src="data:image/png;base64,{{ model_accuracies_plot }}" alt="Model Accuracies">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="plot-container">
+                        <h5><i class="fas fa-chart-area me-2"></i>ROC Curves:</h5>
+                        <img src="data:image/png;base64,{{ roc_curves_plot }}" alt="ROC Curves">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="plot-container">
+                        <h5><i class="fas fa-chart-line me-2"></i>Precision-Recall Curves:</h5>
+                        <img src="data:image/png;base64,{{ precision_recall_curves_plot }}" alt="Precision-Recall Curves">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4 mb-5 animate__animated animate__fadeInUp">
+            <a href="{{ url_for('predict') }}" class="btn btn-primary">
+                <i class="fas fa-magic me-2"></i>Make Predictions
+            </a>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                <i class="fas fa-home me-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Intersection Observer for Animations
+        function setupScrollAnimations() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const element = entry.target;
+                        element.classList.add('animate__animated');
+                        element.classList.add('animate__fadeIn');
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+            
+            document.querySelectorAll('.model-card, .plot-container').forEach(element => {
+                observer.observe(element);
+            });
+        }
+
+        // Initialize animations
+        document.addEventListener('DOMContentLoaded', () => {
+            setupScrollAnimations();
+            
+            // Add hover effect for plot containers
+            const plotContainers = document.querySelectorAll('.plot-container');
+            plotContainers.forEach(container => {
+                container.addEventListener('mouseenter', () => {
+                    container.style.transform = 'translateY(-5px) scale(1.01)';
+                });
+                container.addEventListener('mouseleave', () => {
+                    container.style.transform = '';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

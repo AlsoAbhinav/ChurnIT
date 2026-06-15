@@ -1,0 +1,18 @@
+.title{
+    text-align: center;
+    color: #212EA0;
+    font-size: 25px;
+    font-weight: 600 ;
+    text-transform: uppercase;
+    margin: 70px 0 30px;
+}
+.title h2{
+    color:#000F38;
+    font-size: 42px;
+    margin: 5px;
+}
+
+.dark-btn{
+    background: #212EA0;
+    transition: 0.5s;
+}

@@ -1,0 +1,255 @@
+/* Navbar styles */
+nav {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 7rem;
+  transition: all 0.3s ease-in-out;
+  z-index: 1000;
+  font-size: 1.2rem;
+}
+
+nav.transparent {
+  background-color: transparent;
+}
+
+nav.sticky {
+  background-color:rgb(6, 37, 82);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 0.3rem 2rem;
+}
+
+nav.sticky .logo {
+  height: 69px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* Navbar menu */
+.navbar-menu {
+  display: flex;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+  gap: 2rem; /* Even spacing between all nav items */
+}
+
+.navbar-menu li {
+  position: relative;
+  animation: fadeIn 0.5s ease-in-out;
+  transition: transform 0.3s ease;
+  margin: 0; /* Remove margin since we're using gap */
+}
+
+.navbar-menu li a {
+  color: rgb(255, 255, 255);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  padding: 0.5rem 1rem;
+}
+
+/* Modified to only apply float animation to non-dropdown menu items */
+.navbar-menu li:not(.dropdown):not(:has(.profile-icon-container)):hover {
+  animation: float 0.6s ease-in-out infinite;
+}
+
+/* Profile Icon styles */
+.profile-icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: 50%;
+}
+
+.profile-icon-container svg {
+  color: white;
+  width: 28px;
+  height: 28px;
+}
+
+/* Logo */
+.logo {
+  height: 100px;
+  width: auto;
+  transition: transform 0.3s ease;
+}
+
+.logo:hover {
+  transform: scale(1.05);
+}
+
+/* Dropdown styles */
+.dropdown {
+  position: relative;
+}
+
+/* Apply float animation only to the Services title */
+.dropdown > a:hover {
+  animation: float 0.6s ease-in-out infinite;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 200px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 2000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0s ease 0.3s;
+}
+
+.dropdown:hover .dropdown-menu {
+  display: block;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s ease, visibility 0s ease 0s;
+}
+
+.dropdown-menu li {
+  margin: 0;
+}
+
+.dropdown-menu a {
+  color: white;
+  padding: 10px;
+  display: block;
+  text-decoration: none;
+}
+
+.dropdown-menu a:hover {
+  color: black;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Mobile menu button */
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+/* Responsive styles */
+@media screen and (max-width: 1024px) {
+  nav {
+    padding: 1rem 3rem;
+  }
+  
+  .logo {
+    height: 60px;
+  }
+
+  .navbar-menu {
+    gap: 1.5rem; /* Slightly reduced gap for smaller screens */
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .mobile-menu-btn {
+    display: block;
+  }
+
+  .navbar-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: rgba(0, 0, 255, 0.95);
+    flex-direction: column;
+    padding: 1rem 0;
+    animation: slideDown 0.3s ease-in-out;
+    gap: 0; /* Remove gap in mobile menu */
+  }
+
+  .navbar-menu.active {
+    display: flex;
+  }
+
+  .navbar-menu li {
+    margin: 0;
+    width: 100%;
+    text-align: center;
+  }
+
+  .navbar-menu li a {
+    padding: 1rem;
+    display: block;
+  }
+
+  .dropdown-menu {
+    position: static;
+    width: 100%;
+    background: rgba(0, 0, 255, 0.8);
+    border: none;
+    border-radius: 0;
+  }
+
+  .profile-icon-container {
+    margin: 2cm auto;
+    margin-left: 1rem;
+  }
+
+  .toggle-container {
+    margin-top: 2rem;
+    margin-right: 5rem;
+
+  }
+
+  .toggle-profile-container {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem; /* Adjust this to control the space */
+  }
+
+  nav {
+    padding: 1rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .logo {
+    height: 50px;
+  }
+  
+  nav.sticky {
+    padding: 0.5rem;
+  }
+}

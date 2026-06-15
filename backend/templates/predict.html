@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Churn Predictor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1e2d40;
+            --secondary: #2563eb;
+            --accent: #f43f5e;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --light: #f8fafc;
+            --dark: #0f172a;
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --progress-bg: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background: radial-gradient(circle at top right, #4338ca, #1e2d40);
+            color: var(--light);
+            min-height: 100vh;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .form-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+        }
+
+        .form-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-header {
+            padding: 0.75rem 1.25rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .section-header:hover {
+            background: rgba(37, 99, 235, 0.2);
+            transform: translateX(5px);
+        }
+
+        .section-header i {
+            color: var(--secondary);
+            margin-right: 0.75rem;
+            font-size: 1.25rem;
+        }
+
+        .section-title {
+            margin: 0;
+            font-weight: 600;
+            color: var(--light);
+            font-size: 1.1rem;
+        }
+
+        .form-floating > label {
+            background: transparent !important;
+        }
+
+        .form-floating > .form-control,
+        .form-floating > .form-select {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            height: 58px;
+        }
+
+        .form-floating > .form-control:focus,
+        .form-floating > .form-select:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25);
+        }
+
+        .form-select option {
+            background-color: var(--dark);
+            color: var(--light);
+        }
+
+        .btn-predict {
+            background: linear-gradient(45deg, var(--secondary), #4f46e5);
+            border: none;
+            color: white;
+            border-radius: 30px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-predict:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 20px -3px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-predict::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transform: translateX(-100%);
+            transition: 0.6s;
+        }
+
+        .btn-predict:hover::after {
+            transform: translateX(100%);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: var(--light);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        .form-tip {
+            color: rgb(252, 252, 252);
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        .prediction-result {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(12px);
+            transform: translateY(100%);
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .prediction-result.show {
+            transform: translateY(0);
+            display: block;
+        }
+
+        .progress {
+            height: 12px;
+            background: var(--progress-bg);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, var(--success), var(--accent));
+            transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .tab-content {
+            padding: 1.5rem;
+        }
+
+        .nav-tabs {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-tabs .nav-link {
+            color: rgba(255, 255, 255, 0.7);
+            border: none;
+            padding: 1rem 1.5rem;
+            margin-bottom: -1px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: white;
+            background-color: transparent;
+            border-bottom: 3px solid var(--secondary);
+        }
+
+        .nav-tabs .nav-link:hover:not(.active) {
+            color: white;
+            border-bottom: 3px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .feature-badge {
+            background: rgba(37, 99, 235, 0.15);
+            border: 1px solid rgba(37, 99, 235, 0.3);
+            color: var(--light);
+            font-size: 0.85rem;
+            border-radius: 20px;
+            padding: 0.35rem 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            margin: 0.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .feature-badge:hover {
+            background: rgba(37, 99, 235, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .feature-badge i {
+            margin-right: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .info-tooltip {
+            color: var(--secondary);
+            cursor: pointer;
+            margin-left: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .info-tooltip:hover {
+            transform: scale(1.2);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-content {
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        .alert {
+            background: rgba(244, 63, 94, 0.15);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            color: var(--light);
+            border-radius: 12px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .tab-content {
+                padding: 1rem 0.5rem;
+            }
+            
+            .section-header {
+                padding: 0.5rem 1rem;
+            }
+            
+            .form-floating > .form-control,
+            .form-floating > .form-select {
+                height: 52px;
+            }
+
+            .form-tip {
+                font-size: 0.8rem;
+            }
+
+            label {
+                background: transparent !important; /* Remove any background color */
+                border: none; /* Remove any border if present */
+                box-shadow: none; /* Remove any box shadow if applied */
+                padding: 0; /* Adjust padding if needed */
+            }
+               
+
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="text-center mb-4 animate__animated animate__fadeInDown">
+            <h1 class="display-5 fw-bold mb-3">
+                <i class="fas fa-chart-line me-3 text-info"></i>
+                <span class="gradient-text">Customer Churn Predictor</span>
+            </h1>
+            <p class="lead text-light opacity-75">Predict customer churn probability using advanced machine learning</p>
+        </div>
+        
+        {% if error and error == "Model not found. Please train the model first." %}
+            <div class="alert animate__animated animate__fadeIn mb-4" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-triangle me-3 text-warning fs-4"></i>
+                    <div>
+                        <h4 class="alert-heading mb-2">Model Not Trained</h4>
+                        <p class="mb-0">The churn prediction model has not been trained yet. Please train the model before making predictions.</p>
+                        <form method="POST" action="{{ url_for('train_models') }}" class="mt-3">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-cogs me-2"></i>Train Model Now
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% elif error %}
+            <div class="alert animate__animated animate__fadeIn" role="alert">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <div class="form-card animate__animated animate__fadeIn">
+            <ul class="nav nav-tabs" id="predictionTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="customer-tab" data-bs-toggle="tab" data-bs-target="#customer" type="button" role="tab" aria-controls="customer" aria-selected="true">
+                        <i class="fas fa-user-circle me-2"></i>Customer Profile
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="services-tab" data-bs-toggle="tab" data-bs-target="#services" type="button" role="tab" aria-controls="services" aria-selected="false">
+                        <i class="fas fa-concierge-bell me-2"></i>Services
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="billing-tab" data-bs-toggle="tab" data-bs-target="#billing" type="button" role="tab" aria-controls="billing" aria-selected="false">
+                        <i class="fas fa-file-invoice-dollar me-2"></i>Billing
+                    </button>
+                </li>
+            </ul>
+            
+            <form method="POST" action="{{ url_for('predict') }}" id="predictionForm">
+                <div class="tab-content" id="predictionTabContent">
+                    <!-- Customer Profile Tab -->
+                    <div class="tab-pane fade show active" id="customer" role="tabpanel" aria-labelledby="customer-tab">
+                        <div class="section-header">
+                            <i class="fas fa-users"></i>
+                            <h5 class="section-title">Demographics & Customer History</h5>
+                        </div>
+                        
+                        <div class="section-content">
+                            <div class="row g-4">
+                                <div class="col-md-6 col-lg-3">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="gender" name="gender" required>
+                                            <option value="">Select...</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Male">Male</option>
+                                        </select>
+                                        <label for="gender">Gender</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 col-lg-3">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="SeniorCitizen" name="SeniorCitizen" required>
+                                            <option value="">Select...</option>
+                                            <option value="0">No</option>
+                                            <option value="1">Yes</option>
+                                        </select>
+                                        <label for="SeniorCitizen">Senior Citizen</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 col-lg-3">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="Partner" name="Partner" required>
+                                            <option value="">Select...</option>
+                                            <option value="No">No</option>
+                                            <option value="Yes">Yes</option>
+                                        </select>
+                                        <label for="Partner">Partner</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 col-lg-3">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="Dependents" name="Dependents" required>
+                                            <option value="">Select...</option>
+                                            <option value="No">No</option>
+                                            <option value="Yes">Yes</option>
+                                        </select>
+                                        <label for="Dependents">Dependents</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <input type="number" class="form-control" id="tenure" name="tenure" min="0" required>
+                                        <label for="tenure">Tenure (months)</label>
+                                    </div>
+                                    <div class="form-tip">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        How long the customer has been with the company
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-outline-light" disabled>
+                                    <i class="fas fa-arrow-left me-2"></i>Previous
+                                </button>
+                                <button type="button" class="btn btn-predict" onclick="document.getElementById('services-tab').click()">
+                                    Next<i class="fas fa-arrow-right ms-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Services Tab -->
+                    <div class="tab-pane fade" id="services" role="tabpanel" aria-labelledby="services-tab">
+                        <div class="section-header">
+                            <i class="fas fa-phone"></i>
+                            <h5 class="section-title">Phone Services</h5>
+                        </div>
+                        
+                        <div class="section-content">
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="PhoneService" name="PhoneService" required>
+                                            <option value="">Select...</option>
+                                            <option value="Yes">Yes</option>
+                                            <option value="No">No</option>
+                                        </select>
+                                        <label for="PhoneService">Phone Service</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="MultipleLines" name="MultipleLines" required>
+                                            <option value="">Select...</option>
+                                            <option value="Yes">Yes</option>
+                                            <option value="No">No</option>
+                                            <option value="No phone service">No phone service</option>
+                                        </select>
+                                        <label for="MultipleLines">Multiple Lines</label>
+                                    </div>
+                                </div>
+                            </div>
+                        
+                            <div class="section-header">
+                                <i class="fas fa-wifi"></i>
+                                <h5 class="section-title">Internet Services</h5>
+                            </div>
+                            
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="InternetService" name="InternetService" required>
+                                            <option value="">Select...</option>
+                                            <option value="DSL">DSL</option>
+                                            <option value="Fiber optic">Fiber optic</option>
+                                            <option value="No">No</option>
+                                        </select>
+                                        <label for="InternetService">Internet Service</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="OnlineSecurity" name="OnlineSecurity" required>
+                                            <option value="">Select...</option>
+                                            <option value="Yes">Yes</option>
+                                            <option value="No">No</option>
+                                            <option value="No internet service">No internet service</option>
+                                        </select>
+                                        <label for="OnlineSecurity">Online Security</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="OnlineBackup" name="OnlineBackup" required>
+                                            <option value="">Select...</option>
+                                            <option value="Yes">Yes</option>
+                                            <option value="No">No</option>
+                                            <option value="No internet service">No internet service</option>
+                                        </select>
+                                        <label for="OnlineBackup">Online Backup</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="DeviceProtection" name="DeviceProtection" required>
+                                            <option value="">Select...</option>
+                                            <option value="Yes">Yes</option>
+                                            <option value="No">No</option>
+                                            <option value="No internet service">No internet service</option>
+                                        </select>
+                                        <label for="DeviceProtection">Device Protection</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="TechSupport" name="TechSupport" required>
+                                            <option value="">Select...</option>
+                                            <option value="Yes">Yes</option>
+                                            <option value="No">No</option>
+                                            <option value="No internet service">No internet service</option>
+                                        </select>
+                                        <label for="TechSupport">Tech Support</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="StreamingTV" name="StreamingTV" required>
+                                            <option value="">Select...</option>
+                                            <option value="Yes">Yes</option>
+                                            <option value="No">No</option>
+                                            <option value="No internet service">No internet service</option>
+                                        </select>
+                                        <label for="StreamingTV">Streaming TV</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="StreamingMovies" name="StreamingMovies" required>
+                                            <option value="">Select...</option>
+                                            <option value="Yes">Yes</option>
+                                            <option value="No">No</option>
+                                            <option value="No internet service">No internet service</option>
+                                        </select>
+                                        <label for="StreamingMovies">Streaming Movies</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-outline-light" onclick="document.getElementById('customer-tab').click()">
+                                    <i class="fas fa-arrow-left me-2"></i>Previous
+                                </button>
+                                <button type="button" class="btn btn-predict" onclick="document.getElementById('billing-tab').click()">
+                                    Next<i class="fas fa-arrow-right ms-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Billing Tab -->
+                    <div class="tab-pane fade" id="billing" role="tabpanel" aria-labelledby="billing-tab">
+                        <div class="section-header">
+                            <i class="fas fa-file-invoice"></i>
+                            <h5 class="section-title">Contract & Payment</h5>
+                        </div>
+                        
+                        <div class="section-content">
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="Contract" name="Contract" required>
+                                            <option value="">Select...</option>
+                                            <option value="Month-to-month">Month-to-month</option>
+                                            <option value="One year">One year</option>
+                                            <option value="Two year">Two year</option>
+                                        </select>
+                                        <label for="Contract">Contract Type</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="PaperlessBilling" name="PaperlessBilling" required>
+                                            <option value="">Select...</option>
+                                            <option value="Yes">Yes</option>
+                                            <option value="No">No</option>
+                                        </select>
+                                        <label for="PaperlessBilling">Paperless Billing</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-12 col-lg-4">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="PaymentMethod" name="PaymentMethod" required>
+                                            <option value="">Select...</option>
+                                            <option value="Electronic check">Electronic check</option>
+                                            <option value="Mailed check">Mailed check</option>
+                                            <option value="Bank transfer (automatic)">Bank transfer (automatic)</option>
+                                            <option value="Credit card (automatic)">Credit card (automatic)</option>
+                                        </select>
+                                        <label for="PaymentMethod">Payment Method</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="section-header">
+                                <i class="fas fa-dollar-sign"></i>
+                                <h5 class="section-title">Financial Information</h5>
+                            </div>
+                            
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="number" step="0.01" class="form-control" id="MonthlyCharges" name="MonthlyCharges" min="0" required>
+                                        <label for="MonthlyCharges">Monthly Charges ($)</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="number" step="0.01" class="form-control" id="TotalCharges" name="TotalCharges" min="0" required>
+                                        <label for="TotalCharges">Total Charges ($)</label>
+                                        <div class="form-tip">
+                                            <i class="fas fa-calculator me-1"></i>
+                                            Auto-calculated from monthly charges and tenure
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-outline-light" onclick="document.getElementById('services-tab').click()">
+                                    <i class="fas fa-arrow-left me-2"></i>Previous
+                                </button>
+                                <button type="submit" class="btn btn-predict btn-lg px-4 py-2">
+                                    <i class="fas fa-magic me-2"></i>Predict Churn Probability
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <div class="mt-4 text-center">
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                <i class="fas fa-home me-2"></i>Back to Home
+            </a>
+        </div>
+    </div>
+
+    <!-- Keep the prediction result component unchanged as requested -->
+    <div class="prediction-result" id="predictionResult">
+        {% if prediction is not none %}
+        <div class="prediction-modal animate__animated animate__fadeIn">
+            <div class="prediction-card">
+                <div class="prediction-header">
+                    <h2 class="prediction-title animate__animated animate__slideInDown">Prediction Result</h2>
+                    <button type="button" class="btn-close-prediction" onclick="document.getElementById('predictionResult').classList.remove('show')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="prediction-body animate__animated animate__fadeIn animate__delay-1s">
+                    <div class="prediction-gauge">
+                        <div class="gauge-track">
+                            <div class="gauge-fill" style="transform: rotate({{ probability * 180 }}deg)"></div>
+                        </div>
+                        <div class="gauge-center">
+                            <div class="gauge-value">{{ "%.1f"|format(probability * 100) }}%</div>
+                        </div>
+                    </div>
+                    <div class="prediction-text">
+                        <h3 class="prediction-probability">Churn Probability</h3>
+                        <div class="prediction-result-badge {% if prediction == 1 %}danger-pulse{% else %}success-pulse{% endif %}">
+                            {% if prediction == 1 %}Likely to Churn{% else %}Likely to Stay{% endif %}
+                        </div>
+                    </div>
+                    <div class="action-buttons animate__animated animate__fadeIn animate__delay-2s">
+                        <button class="btn-action primary" onclick="showRetentionPlan()">
+                            <i class="fas fa-clipboard-list me-2"></i>View Retention Plan
+                        </button>
+                        <button class="btn-action primary" onclick="showRetentionEmail()">
+                            <i class="fas fa-envelope me-2"></i>View Customer Email
+                        </button>
+                        <button class="btn-action secondary" onclick="document.getElementById('predictionResult').classList.remove('show')">
+                            <i class="fas fa-redo me-2"></i>New Prediction
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <style>
+            .prediction-result {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(9, 14, 29, 0.9);
+                backdrop-filter: blur(10px);
+                z-index: 1000;
+                justify-content: center;
+                align-items: center;
+            }
+            
+            .prediction-result.show {
+                display: flex;
+            }
+            
+            .prediction-modal {
+                width: 80%;
+                max-width: 1200px;
+                height: 80vh;
+            }
+            
+            .prediction-card {
+                background: linear-gradient(135deg, rgba(30, 45, 64, 0.95), rgba(15, 23, 42, 0.95));
+                border-radius: 24px;
+                box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6);
+                overflow: hidden;
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .prediction-header {
+                padding: 2rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            }
+            
+            .prediction-title {
+                margin: 0;
+                font-weight: 700;
+                color: white;
+                letter-spacing: 0.5px;
+                font-size: 2.2rem;
+            }
+            
+            .btn-close-prediction {
+                background: rgba(255, 255, 255, 0.15);
+                border: none;
+                color: rgba(255, 255, 255, 0.8);
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-size: 1.2rem;
+            }
+            
+            .btn-close-prediction:hover {
+                background: rgba(255, 255, 255, 0.25);
+                color: white;
+                transform: rotate(90deg);
+            }
+            
+            .prediction-body {
+                padding: 3rem;
+                text-align: center;
+                flex: 1;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            
+            .prediction-gauge {
+                position: relative;
+                width: 300px;
+                height: 150px;
+                margin: 0 auto 2.5rem;
+            }
+            
+            .gauge-track {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 300px;
+                height: 150px;
+                border-radius: 150px 150px 0 0;
+                background: rgba(255, 255, 255, 0.12);
+                overflow: hidden;
+            }
+            
+            .gauge-fill {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 300px;
+                height: 150px;
+                border-radius: 150px 150px 0 0;
+                background: linear-gradient(90deg, #10b981, #3b82f6, #f43f5e);
+                transform-origin: center bottom;
+                transform: rotate(0deg);
+                transition: transform 1.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+            
+            .gauge-center {
+                position: absolute;
+                bottom: 0;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 120px;
+                height: 60px;
+                background: rgba(9, 14, 29, 0.75);
+                border-radius: 60px 60px 0 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .gauge-value {
+                font-size: 2rem;
+                font-weight: 700;
+                color: white;
+                text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            }
+            
+            .prediction-text {
+                margin-bottom: 3rem;
+            }
+            
+            .prediction-probability {
+                font-size: 1.8rem;
+                color: rgba(255, 255, 255, 0.85);
+                margin-bottom: 1rem;
+                font-weight: 600;
+            }
+            
+            .prediction-result-badge {
+                display: inline-block;
+                padding: 0.7rem 2rem;
+                border-radius: 50px;
+                font-weight: 700;
+                font-size: 1.5rem;
+                color: white;
+                margin-top: 1rem;
+            }
+            
+            .danger-pulse {
+                background: rgba(244, 63, 94, 0.7);
+                box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.8);
+                animation: pulse-danger 2s infinite;
+            }
+            
+            .success-pulse {
+                background: rgba(16, 185, 129, 0.7);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8);
+                animation: pulse-success 2s infinite;
+            }
+            
+            @keyframes pulse-danger {
+                0% {
+                    box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.8);
+                }
+                70% {
+                    box-shadow: 0 0 0 15px rgba(244, 63, 94, 0);
+                }
+                100% {
+                    box-shadow: 0 0 0 0 rgba(244, 63, 94, 0);
+                }
+            }
+            
+            @keyframes pulse-success {
+                0% {
+                    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8);
+                }
+                70% {
+                    box-shadow: 0 0 0 15px rgba(16, 185, 129, 0);
+                }
+                100% {
+                    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+                }
+            }
+            
+            .action-buttons {
+                display: flex;
+                justify-content: center;
+                gap: 1.5rem;
+                margin-top: 2rem;
+            }
+    
+            .retention-content {
+                text-align: left;
+                background: rgba(255, 255, 255, 0.07);
+                padding: 2.5rem;
+                border-radius: 16px;
+                margin-top: 1.5rem;
+                max-height: 60vh;
+                overflow-y: auto;
+                color: white;
+                box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.2);
+            }
+            
+            .retention-content h1 {
+                color: #4f46e5;
+                margin-bottom: 1.5rem;
+                font-size: 2.4rem;
+                font-weight: 700;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                padding-bottom: 0.8rem;
+            }
+            
+            .retention-content h2 {
+                color: #3b82f6;
+                margin: 1.5rem 0 1rem;
+                font-size: 1.8rem;
+                font-weight: 600;
+            }
+            
+            .retention-content h3 {
+                color: #60a5fa;
+                margin: 1.2rem 0 0.8rem;
+                font-size: 1.5rem;
+                font-weight: 600;
+            }
+            
+            .retention-content h4 {
+                color: #93c5fd;
+                margin: 1rem 0 0.7rem;
+                font-size: 1.3rem;
+                font-weight: 600;
+            }
+            
+            .retention-content p {
+                margin-bottom: 1.2rem;
+                line-height: 1.7;
+                font-size: 1.1rem;
+                color: rgba(255, 255, 255, 0.85);
+            }
+            
+            .retention-content strong {
+                color: #f9fafb;
+                font-weight: 600;
+            }
+            
+            .retention-content ul, .retention-content ol {
+                margin-bottom: 1.2rem;
+                padding-left: 1.5rem;
+            }
+            
+            .retention-content li {
+                margin-bottom: 0.7rem;
+                line-height: 1.6;
+            }
+            
+            .highlight {
+                color: #f472b6;
+                font-weight: 600;
+            }
+            
+            .btn-action {
+                padding: 0.8rem 1.8rem;
+                border-radius: 50px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                border: none;
+                font-size: 1.1rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            
+            .btn-action.primary {
+                background: linear-gradient(45deg, #2563eb, #4f46e5);
+                color: white;
+                box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+            }
+            
+            .btn-action.primary:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 20px rgba(37, 99, 235, 0.45);
+            }
+            
+            .btn-action.secondary {
+                background: rgba(255, 255, 255, 0.12);
+                color: white;
+                border: 1px solid rgba(255, 255, 255, 0.25);
+            }
+            
+            .btn-action.secondary:hover {
+                background: rgba(255, 255, 255, 0.2);
+            }
+            
+            /* Make responsive */
+            @media (max-width: 768px) {
+                .prediction-modal {
+                    width: 90%;
+                    height: 85vh;
+                }
+                
+                .prediction-gauge {
+                    width: 200px;
+                    height: 100px;
+                }
+                
+                .gauge-track, .gauge-fill {
+                    width: 200px;
+                    height: 100px;
+                }
+                
+                .gauge-center {
+                    width: 80px;
+                    height: 40px;
+                }
+                
+                .gauge-value {
+                    font-size: 1.5rem;
+                }
+                
+                .prediction-title {
+                    font-size: 1.8rem;
+                }
+                
+                .prediction-probability {
+                    font-size: 1.5rem;
+                }
+                
+                .prediction-result-badge {
+                    font-size: 1.2rem;
+                }
+                
+                .action-buttons {
+                    flex-direction: column;
+                    gap: 1rem;
+                }
+                
+                .btn-action {
+                    width: 100%;
+                    justify-content: center;
+                }
+                
+                .retention-content h1 {
+                    font-size: 1.8rem;
+                }
+                
+                .retention-content h2 {
+                    font-size: 1.5rem;
+                }
+            }
+        </style>
+        <!-- Retention Plan Modal -->
+        <div id="retentionPlanModal" class="prediction-result">
+            <div class="prediction-modal animate__animated animate__fadeIn">
+                <div class="prediction-card">
+                    <div class="prediction-header">
+                        <h2 class="prediction-title animate__animated animate__slideInDown">Retention Plan</h2>
+                        <button type="button" class="btn-close-prediction" onclick="document.getElementById('retentionPlanModal').classList.remove('show')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="prediction-body animate__animated animate__fadeIn">
+                        <div class="retention-content">
+                            {{ retention_plan|safe }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Customer Email Modal -->
+        <div id="customerEmailModal" class="prediction-result">
+            <div class="prediction-modal animate__animated animate__fadeIn">
+                <div class="prediction-card">
+                    <div class="prediction-header">
+                        <h2 class="prediction-title animate__animated animate__slideInDown">Customer Email</h2>
+                        <button type="button" class="btn-close-prediction" onclick="document.getElementById('customerEmailModal').classList.remove('show')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="prediction-body animate__animated animate__fadeIn">
+                        <div class="retention-content">
+                            {{ customer_email|safe }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            // Format content function
+            function formatRetentionContent() {
+                const contentElements = document.querySelectorAll('.retention-content');
+                contentElements.forEach(element => {
+                    let content = element.innerHTML;
+                    
+                    // Format headings
+                    content = content.replace(/#{1,6}\s*([^#\n]+)/g, '<h2>$1</h2>');
+                    content = content.replace(/\*\*([^*\n]+):\*\*/g, '<h3>$1</h3>');
+                    
+                    // Format lists
+                    content = content.replace(/^\s*[-*]\s+(.+)$/gm, '<li>$1</li>');
+                    content = content.replace(/(<li>.*?<\/li>)/gs, '<ul>$1</ul>');
+                    
+                    // Format paragraphs
+                    const paragraphs = content.split(/\n{2,}/);
+                    content = paragraphs.map(p => {
+                        if (!p.startsWith('<h') && !p.startsWith('<ul>')) {
+                            return `<p>${p}</p>`;
+                        }
+                        return p;
+                    }).join('');
+                    
+                    // Format strong and emphasis
+                    content = content.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+                    content = content.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+                    
+                    element.innerHTML = content;
+                });
+            }
+            
+            function showRetentionPlan() {
+                document.getElementById('retentionPlanModal').classList.add('show');
+                // Call formatting function when showing the retention plan
+                formatRetentionContent();
+            }
+            
+            function showRetentionEmail() {
+                document.getElementById('customerEmailModal').classList.add('show');
+                // Call formatting function when showing the customer email
+                formatRetentionContent();
+            }
+        </script>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Form field dependencies
+            const internetService = document.getElementById('InternetService');
+            const internetDependentFields = [
+                'OnlineSecurity',
+                'OnlineBackup',
+                'DeviceProtection',
+                'TechSupport',
+                'StreamingTV',
+                'StreamingMovies'
+            ];
+
+            const phoneService = document.getElementById('PhoneService');
+            const multipleLines = document.getElementById('MultipleLines');
+
+            // Handle Internet Service dependencies
+            internetService.addEventListener('change', function() {
+                const noService = this.value === "No";
+                internetDependentFields.forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    if (noService) {
+                        field.value = "No internet service";
+                        field.disabled = true;
+                    } else {
+                        field.disabled = false;
+                    }
+                });
+            });
+
+           
+            // Handle Phone Service dependencies
+            phoneService.addEventListener('change', function() {
+                const noService = this.value === "No";
+                if (noService) {
+                    multipleLines.value = "No phone service";
+                    multipleLines.disabled = true;
+                } else {
+                    multipleLines.disabled = false;
+                }
+            });
+
+            // Handle Monthly Charges and Total Charges calculation
+            const monthlyCharges = document.getElementById('MonthlyCharges');
+            const tenure = document.getElementById('tenure');
+            const totalCharges = document.getElementById('TotalCharges');
+
+            function updateTotalCharges() {
+                if (monthlyCharges.value && tenure.value) {
+                    totalCharges.value = (parseFloat(monthlyCharges.value) * parseFloat(tenure.value)).toFixed(2);
+                }
+            }
+
+            monthlyCharges.addEventListener('input', updateTotalCharges);
+            tenure.addEventListener('input', updateTotalCharges);
+
+            // Show prediction result if available
+            {% if prediction is not none %}
+                const resultElement = document.getElementById('predictionResult');
+                resultElement.classList.add('show');
+            {% endif %}
+        });
+    </script>
+</body>
+</html>

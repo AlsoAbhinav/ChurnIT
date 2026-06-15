@@ -1,0 +1,181 @@
+/* Add these styles to your index.css file */
+
+/* Global Styles */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  font-family: "Outfit", sans-serif;
+  box-sizing: border-box;
+}
+
+body {
+  background: #F5F5F5;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.container {
+  padding-left: 10%;
+  padding-right: 10%;
+}
+
+.btn {
+  background: white;
+  color: #212121;
+  padding: 14px 25px;
+  font-size: 25px;
+  border-radius: 30px;
+  cursor: pointer;
+  border: 0;
+  outline: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn img {
+  width: 20px;
+  margin-left: 10px;
+}
+
+.dark-btn {
+  background: #212EA0;
+  color: #fff;
+  transition: 0.5s;
+  font-size: 15px;
+}
+
+/* Programs Component Styles */
+.programs {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 0;
+}
+
+.program {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 30px;
+  transition: all 0.3s ease-in-out;
+  width: 80%;
+  border-bottom: 1px solid black;
+  padding-bottom: 20px;
+}
+
+.program-image {
+  max-width: 100%;
+  width: 45%;
+  height: auto;
+  margin-right: 20px;
+  border-radius: 8px;
+  position: relative;
+  perspective: 1000px;
+}
+
+.program-image.flipped {
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+  transform-origin: center center;
+  transform: rotateY(180deg);
+}
+
+.program-image img,
+.program-image .program-description {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+}
+
+.program-image .program-description {
+  transform: rotateY(180deg);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255, 215, 0, 0.8);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.program-info {
+  width: 50%;
+  color: #333;
+  display: flex;
+  align-items: center;
+}
+
+.program-icon {
+  width: 80px;
+  height: 80px;
+  margin-right: 20px;
+}
+
+.program-text {
+  flex-grow: 1;
+}
+
+.program-text h3 {
+  font-size: 1.8rem;
+  margin-bottom: 15px;
+  font-family: 'Roboto', sans-serif;
+}
+
+.learn-more-btn {
+  padding: 10px 20px;
+  font-size: 1.1rem;
+  background-color: transparent;
+  color: #333;
+  border: 2px solid #FFD700;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.learn-more-btn.active {
+  background-color: #FFD700;
+  color: #333;
+}
+
+.learn-more-btn:hover {
+  background-color: #FFD700;
+  color: #333;
+}
+
+@media screen and (max-width: 768px) {
+  .program {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .program.reverse {
+    flex-direction: column-reverse;
+  }
+
+  .program-image {
+    width: 80%;
+    margin-bottom: 20px;
+  }
+
+  .program-info {
+    width: 80%;
+    text-align: center;
+  }
+
+  .program-text h3 {
+    font-size: 1.5rem;
+  }
+
+  .program-text p {
+    font-size: 1rem;
+  }
+}

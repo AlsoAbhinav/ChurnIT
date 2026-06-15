@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>churnIT - Data Analysis Results</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --card-bg: rgba(255, 255, 255, 0.1);
+            --card-hover-bg: rgba(255, 255, 255, 0.2);
+            --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            --gradient-accent: linear-gradient(45deg, var(--secondary-color), var(--accent-color));
+            --gradient-dark: linear-gradient(135deg, var(--dark-color), var(--primary-color));
+            --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 6px 15px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.2);
+            --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            --transition-smooth: all 0.3s ease;
+        }
+        
+
+        body {
+            background: url('https://www.transparenttextures.com/patterns/polkadots.png');
+            background-size: cover;
+            color: var(--light-color);
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            padding-top: 70px; /* Space for the sticky navbar */
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, #38bdf8, #818cf8); /* Gradient from blue to purple */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: inherit; /* Inherit the font size from the parent .stat-number */
+            font-weight: inherit; /* Inherit the font weight from the parent .stat-number */
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px); /* For Safari */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            height: 100%;
+            transition: var(--transition-bounce);
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-sm);
+            z-index: 1;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1));
+            opacity: 0;
+            transition: var(--transition-smooth);
+            z-index: -1;
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--gradient-accent);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: var(--transition-smooth);
+        }
+
+        .card:hover {
+            transform: translateY(-15px) scale(1.03);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .fact-carousel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(52, 152, 219, 0.1), rgba(231, 76, 60, 0.1));
+            z-index: 0;
+        }
+
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card:hover::after {
+            transform: scaleX(1);
+        }
+
+        .card-body {
+            padding: 2rem;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            position: relative;
+        }
+
+        .card-title {
+            color: var(--light-color);
+            font-size: 1.5rem;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .card-title i {
+            margin-right: 0.75rem;
+            color: var(--accent-color);
+            font-size: 1.75rem;
+            transition: var(--transition-smooth);
+        }
+
+        .card:hover .card-title i {
+            transform: scale(1.2) rotate(10deg);
+            color: var(--secondary-color);
+        }
+
+        .card-text {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+
+        .chart-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--gradient-accent);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: var(--transition-smooth);
+        }
+
+        .chart-container:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .chart-container:hover::before {
+            transform: scaleX(1);
+        }
+
+
+        /* Custom cursor */
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: rgba(231, 76, 60, 0.5);
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.1s ease;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+
+        .cursor-dot {
+            position: fixed;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            pointer-events: none;
+            z-index: 10000;
+            transition: opacity 0.3s ease;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+
+        /* Scroll to top button */
+        .scroll-top {
+            position: fixed;
+            bottom: -60px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: var(--shadow-md);
+            opacity: 0;
+        }
+
+        .scroll-top.visible {
+            bottom: 30px;
+            opacity: 1;
+        }
+
+        .scroll-top:hover {
+            transform: translateY(-5px);
+            background: var(--secondary-color);
+        }
+
+        /* Progress bar */
+        .progress-container {
+            position: fixed;
+            top: 0;
+            z-index: 1001;
+            width: 100%;
+            height: 4px;
+            background: transparent;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: var(--accent-color);
+            width: 0%;
+            transition: width 0.2s ease;
+        }
+
+        @media (min-width: 992px) {
+            .custom-cursor, .cursor-dot {
+                display: block;
+            }
+        }
+
+        /* Sticky Navbar Style */
+        .navbar {
+            background: rgba(44, 62, 80, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 0.75rem 1rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar-brand {
+            font-size: 1.75rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            color: var(--light-color) !important;
+        }
+
+        .navbar-brand:hover {
+            transform: scale(1.1);
+            color: var(--accent-color) !important;
+        }
+
+        .nav-link {
+            font-size: 1rem;
+            color: var(--light-color) !important;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--accent-color) !important;
+        }
+
+        .main-container {
+            padding: 2rem;
+        }
+
+        .hero-section {
+            min-height: 15vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .hero-content h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, var(--light-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 1.5rem;
+            height: 100%;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px) scale(1.05);
+            background: var(--card-hover-bg);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-top: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;
+            transition: var(--transition-smooth);
+        }
+
+        .btn-primary {
+            background: var(--secondary-color);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-color);
+            transform: translateY(-2px);
+        }
+
+        .plot-container {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .plot-container:hover {
+            transform: translateY(-5px) scale(1.02);
+            background: var(--card-hover-bg);
+        }
+
+        .results-chart {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .results-chart:hover {
+            transform: scale(1.02);
+        }
+
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+            .stat-card {
+                padding: 1rem;
+            }
+        }
+
+
+    </style><style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #1a2530;
+            --card-bg: rgba(255, 255, 255, 0.1);
+            --card-hover-bg: rgba(255, 255, 255, 0.15);
+            --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            --gradient-accent: linear-gradient(45deg, var(--secondary-color), var(--accent-color));
+            --gradient-dark: linear-gradient(135deg, var(--dark-color), var(--primary-color));
+            --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 6px 15px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.2);
+            --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            --transition-smooth: all 0.3s ease;
+        }
+    
+        body {
+            background: var(--gradient-primary);
+            color: var(--light-color);
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            position: relative;
+        }
+    
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cpath fill='%23ffffff' fill-opacity='0.05' d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z'%3E%3C/path%3E%3C/svg%3E");
+            z-index: -1;
+            opacity: 0.8;
+            animation: backgroundMove 60s linear infinite;
+        }
+    
+        @keyframes backgroundMove {
+            0% {
+                background-position: 0 0;
+            }
+            100% {
+                background-position: 100px 100px;
+            }
+        }
+    </style>
+    
+</head>
+
+<body>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Custom cursor (desktop only) -->
+    <div class="custom-cursor" id="customCursor"></div>
+    <div class="cursor-dot" id="cursorDot"></div>
+
+    <!-- Scroll Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- Scroll to top button -->
+    <div class="scroll-top" id="scrollTop">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
+    <!-- Floating elements -->
+    <div id="floatingElements"></div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-chart-line me-2"></i>
+                ChurnIT
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            <i class="fas fa-home me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/analyze">
+                            <i class="fas fa-analytics me-1"></i> Analysis
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/predict">
+                            <i class="fas fa-magic me-1"></i> Predictions
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="hero-section">
+            <div class="hero-content">
+                <h1 class="animate__animated animate__fadeInDown">
+                    Data Analysis Results
+                </h1>
+                <p class="lead animate__animated animate__fadeInUp">
+                    Comprehensive analysis of customer behavior and churn patterns
+                </p>
+            </div>
+        </div>
+
+        <h3 class="stats-heading animate__animated animate__fadeIn">
+            <i class="fas fa-chart-bar"></i> Key Statistics
+        </h3>
+        
+        <div class="row">
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="stat-card animate__animated animate__fadeInLeft">
+                    <i class="fas fa-users fa-2x"></i>
+                    <h5>Total Customers</h5>
+                    <div class="stat-number" data-value="{{ stats.total_customers }}">
+                        <span class="gradient-text">{{ stats.total_customers }}</span>
+                    </div>
+                    
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="stat-card animate__animated animate__fadeInUp">
+                    <i class="fas fa-times-circle fa-2x"></i>
+                    <h5>Churn Rate</h5>
+                    <div class="stat-number" data-value="{{ stats.churn_rate }}">{{ "%.2f"|format(stats.churn_rate) }}%</div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="stat-card animate__animated animate__fadeInRight">
+                    <i class="fas fa-user-tie fa-2x"></i>
+                    <h5>Senior Citizens</h5>
+                    <div class="stat-number" data-value="{{ stats.senior_citizen_rate }}">{{ "%.2f"|format(stats.senior_citizen_rate) }}%</div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="stat-card animate__animated animate__fadeInLeft" data-animation="fadeInLeft">
+                    <i class="fas fa-dollar-sign fa-2x"></i>
+                    <h5>Average Monthly Charges</h5>
+                    <div class="stat-number" data-value="{{ stats.avg_monthly_charges }}">${{ "%.2f"|format(stats.avg_monthly_charges) }}</div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="stat-card animate__animated animate__fadeInUp" data-animation="fadeInUp">
+                    <i class="fas fa-history fa-2x"></i>
+                    <h5>Average Tenure</h5>
+                    <div class="stat-number" data-value="{{ stats.avg_tenure }}">{{ "%.2f"|format(stats.avg_tenure) }} months</div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="stat-card animate__animated animate__fadeInRight" data-animation="fadeInRight">
+                    <i class="fas fa-file-contract fa-2x"></i>
+                    <h5>Most Common Contract</h5>
+                    <div class="stat-number">{{ stats.most_common_contract }}</div>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="stats-heading animate__animated animate__fadeIn" data-animation="fadeIn">
+            <i class="fas fa-chart-pie"></i> Distribution Analysis
+        </h3>
+        
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="plot-container animate__animated animate__fadeInLeft" data-animation="fadeInLeft">
+                    <h5 class="plot-heading">
+                        <i class="fas fa-user-tie"></i>
+                        Senior Citizens Distribution
+                    </h5>
+                    <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
+                        <img src="data:image/png;base64,{{ plots.senior_citizens }}" 
+                             class="results-chart img-fluid" alt="Senior Citizens Distribution">
+                    </div>
+                </div>
+            </div>
+        
+            <div class="col-md-6 mb-4">
+                <div class="plot-container animate__animated animate__fadeInRight" data-animation="fadeInRight">
+                    <h5 class="plot-heading">
+                        <i class="fas fa-times-circle"></i>
+                        Churn Distribution
+                    </h5>
+                    <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
+                        <img src="data:image/png;base64,{{ plots.churn_distribution }}" 
+                             class="results-chart img-fluid" alt="Churn Distribution">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="plot-container animate__animated animate__fadeInLeft" data-animation="fadeInLeft">
+                    <h5 class="plot-heading">
+                        <i class="fas fa-file-contract"></i>
+                        Churn by Contract Type
+                    </h5>
+                    <img src="data:image/png;base64,{{ plots.contract_distribution }}" 
+                         class="results-chart img-fluid" alt="Churn by Contract Type">
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="plot-container animate__animated animate__fadeInRight" data-animation="fadeInRight">
+                    <h5 class="plot-heading">
+                        <i class="fas fa-dollar-sign"></i>
+                        Monthly Charges by Churn Status
+                    </h5>
+                    <img src="data:image/png;base64,{{ plots.monthly_charges }}" 
+                         class="results-chart img-fluid" alt="Monthly Charges Distribution">
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4 mb-5 animate__animated animate__fadeInUp" data-animation="fadeInUp">
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <i class="fas fa-home me-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Function to animate numbers counting up
+    function animateStats() {
+        const stats = document.querySelectorAll('.stat-number');
+
+        stats.forEach(stat => {
+            const value = stat.getAttribute('data-value');
+            if (!value) return;
+
+            const target = parseFloat(value.replace(/[^0-9.]/g, ''));
+            const prefix = stat.textContent.includes('$') ? '$' : '';
+            const suffix = stat.textContent.includes('%') ? '%' : 
+                           (stat.textContent.includes('months') ? ' months' : '');
+            let current = 0;
+            const increment = target / 50; // Adjust speed
+            const duration = 1500;
+            const step = duration / 50;
+
+            // Check if target is a number
+            if (isNaN(target)) return;
+
+            const interval = setInterval(() => {
+                current += increment;
+
+                if (current >= target) {
+                    clearInterval(interval);
+                    stat.textContent = prefix + (target < 10 ? target.toFixed(2) : Math.floor(target)) + suffix;
+                } else {
+                    stat.textContent = prefix + (target < 10 ? current.toFixed(2) : Math.floor(current)) + suffix;
+                }
+            }, step);
+        });
+    }
+
+    // Intersection Observer for Scroll Animations
+    function setupScrollAnimations() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate__animated', entry.target.dataset.animation);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('[data-animation]').forEach(element => {
+            observer.observe(element);
+        });
+    }
+
+    // Custom Cursor Functionality
+    const customCursor = document.querySelector('#customCursor');
+    const cursorDot = document.querySelector('#cursorDot');
+
+    document.addEventListener('mousemove', (e) => {
+        customCursor.style.left = `${e.pageX}px`;
+        customCursor.style.top = `${e.pageY}px`;
+
+        cursorDot.style.left = `${e.pageX}px`;
+        cursorDot.style.top = `${e.pageY}px`;
+    });
+
+    // Scroll to Top Button Functionality
+    const scrollTopButton = document.querySelector('#scrollTop');
+
+    window.addEventListener('scroll', () => {
+        if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+            scrollTopButton.classList.add('visible');
+        } else {
+            scrollTopButton.classList.remove('visible');
+        }
+    });
+
+    scrollTopButton.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Progress Bar Functionality
+    const progressBar = document.querySelector('#progressBar');
+
+    window.addEventListener('scroll', () => {
+        let scrollTotal = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        let scrollPosition = document.documentElement.scrollTop || document.body.scrollTop;
+        let scrollPercent = (scrollPosition / scrollTotal) * 100;
+        progressBar.style.width = scrollPercent + '%';
+    });
+
+    // Floating Elements (Optional - You can customize this further as needed)
+    const floatingElements = document.querySelector('#floatingElements');
+
+    // Example: Add a random floating element
+    setInterval(() => {
+        const newElement = document.createElement('div');
+        newElement.classList.add('floating-element');
+        newElement.style.left = `${Math.random() * 100}%`;
+        newElement.style.animationDuration = `${Math.random() * 10 + 5}s`; // Random animation duration
+        floatingElements.appendChild(newElement);
+
+        // Remove element after animation ends
+        newElement.addEventListener('animationend', () => {
+            newElement.remove();
+        });
+    }, 3000); // Generate a floating element every 3 seconds
+
+    // Initialize animations
+    document.addEventListener('DOMContentLoaded', () => {
+        animateStats();
+        setupScrollAnimations();
+
+        // Add hover effect for plot containers
+        document.querySelectorAll('.plot-container').forEach(container => {
+            container.addEventListener('mouseenter', () => {
+                container.style.transform = 'translateY(-10px) scale(1.02)';
+            });
+            container.addEventListener('mouseleave', () => {
+                container.style.transform = '';
+            });
+        });
+    });
+</script>
+
+    
+</body>
+</html>
