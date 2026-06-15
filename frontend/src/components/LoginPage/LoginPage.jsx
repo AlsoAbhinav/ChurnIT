@@ -18,9 +18,6 @@ const LoginPage = () => {
   const clientId =
     "886838287131-fotu4sh90du29nuql1nd6s1q0mdd8pe7.apps.googleusercontent.com";
 
-  // This is the local address where your Python Flask app runs
-  const FLASK_BACKEND_URL = "";
-
   useEffect(() => {
     // Wipe login data when the website is loaded for the first time
     localStorage.clear();
@@ -31,7 +28,7 @@ const LoginPage = () => {
     localStorage.setItem("isLoggedIn", "true");
     localStorage.setItem("googleCredential", credential);
     alert("Login successful with Google");
-    window.location.href = `${FLASK_BACKEND_URL}/`;
+    window.location.href = "/";
   };
 
   const handleGoogleFailure = () => {
@@ -57,6 +54,12 @@ const LoginPage = () => {
           }),
         });
 
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          setError(errorData.message || "Incorrect email or password.");
+          return;
+        }
+
         const data = await response.json();
 
         if (data.success) {
@@ -67,8 +70,7 @@ const LoginPage = () => {
           // REDIRECT: Redirects the browser to your main Flask dashboard page
           window.location.href = "/";
         } else {
-          // If Flask says it failed, show the error message from Flask (e.g. "Incorrect email or password")
-          setError(data.message);
+          setError(data.message || "Incorrect email or password.");
         }
       } catch (err) {
         setError("Cannot connect to backend server. Is app.py running?");
@@ -98,7 +100,7 @@ const LoginPage = () => {
           alert(data.message);
           setIsLogin(true); // Flip the form view automatically to show the Login form
         } else {
-          setError(data.message);
+          setError(data.message || "Registration failed.");
         }
       } catch (err) {
         setError("Cannot connect to backend server. Is app.py running?");
@@ -112,7 +114,6 @@ const LoginPage = () => {
   };
 
   const handleResetPassword = () => {
-    // Keeping your original frontend password reset layout as a safe structural view
     alert("Password reset link sent to your registration endpoint.");
     setIsForgotPassword(false);
     setIsLogin(true);
@@ -227,10 +228,18 @@ const LoginPage = () => {
             </form>
           )}
 
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={handleGoogleFailure}
-          />
+          <div
+            style={{
+              marginTop: "15px",
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleFailure}
+            />
+          </div>
 
           {!isForgotPassword && (
             <p className="toggle-form">

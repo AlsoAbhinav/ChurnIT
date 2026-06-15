@@ -19,21 +19,20 @@ warnings.filterwarnings("ignore")
 
 from flask_cors import CORS
 
-
 app = Flask(__name__)
-CORS(app) # 🟢 Enables cross-origin communication with your React frontend
+CORS(app) # Enables cross-origin communication with your React frontend
 
-# 🔒 In-memory credential store (Simulating a database table user account allocation)
+# In-memory credential store (Simulating a database table user account allocation)
 USER_DATABASE = {}
 
 # ==========================================
-#             AUTHENTICATION APIS
+#              AUTHENTICATION APIS
 # ==========================================
 
 @app.route('/api/register', methods=['POST'])
 def api_register():
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
         email = data.get('email')
         password = data.get('password')
         
@@ -54,7 +53,7 @@ def api_register():
 @app.route('/api/login', methods=['POST'])
 def api_login():
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
         email = data.get('email')
         password = data.get('password')
         
@@ -74,7 +73,6 @@ def api_login():
             
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
-
 
 
 # Set plot style
@@ -205,7 +203,6 @@ def index():
 
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
-    # Define fields outside the POST block since we need them for both GET and POST
     categorical_fields = [
         'gender', 'Partner', 'Dependents', 'PhoneService', 'InternetService', 'OnlineSecurity', 'OnlineBackup', 'DeviceProtection',
         'TechSupport', 'StreamingTV', 'StreamingMovies', 'Contract',
@@ -213,7 +210,6 @@ def predict():
     ]
     numeric_fields = ['tenure', 'MonthlyCharges', 'TotalCharges']
 
-    # Handle GET request
     if request.method == 'GET':
         try:
             with open('trained_model.pkl', 'rb') as file:
@@ -228,38 +224,28 @@ def predict():
                                  prediction=None,
                                  probability=None)
 
-    # Handle POST request
     elif request.method == 'POST':
         form_data = {}
         try:
-            # Load model data
             with open('trained_model.pkl', 'rb') as file:
                 model_data = pickle.load(file)
             
-            # Process PhoneService first to handle conditional fields
             phone_service = request.form.get('PhoneService')
             if not phone_service:
                 raise ValueError("Missing required field: PhoneService")
             form_data['PhoneService'] = phone_service
             
-            # Process InternetService next to handle conditional fields
             internet_service = request.form.get('InternetService')
             if not internet_service:
                 raise ValueError("Missing required field: InternetService")
             form_data['InternetService'] = internet_service
             
-            # Process other categorical fields with conditional validation
             for field in categorical_fields:
-                # Skip fields we've already processed
                 if field in ['PhoneService', 'InternetService']:
                     continue
-                
-                # Skip MultipleLines if PhoneService is No
                 if field == 'MultipleLines' and form_data['PhoneService'] == 'No':
                     form_data[field] = 'No phone service'
                     continue
-                
-                # Skip internet-dependent services if InternetService is No
                 if field in ['OnlineSecurity', 'OnlineBackup', 'DeviceProtection', 'TechSupport', 'StreamingTV', 'StreamingMovies'] and form_data['InternetService'] == 'No':
                     form_data[field] = 'No internet service'
                     continue
@@ -269,7 +255,6 @@ def predict():
                     raise ValueError(f"Missing required field: {field}")
                 form_data[field] = value
             
-            # Process numeric fields with validation
             for field in numeric_fields:
                 value = request.form.get(field)
                 try:
@@ -281,38 +266,31 @@ def predict():
                 except ValueError as e:
                     raise ValueError(f"Invalid value for {field}: {str(e)}")
             
-            # Handle SeniorCitizen with validation
             senior_citizen = request.form.get('SeniorCitizen')
             if senior_citizen not in ['0', '1']:
                 raise ValueError("Invalid value for SeniorCitizen")
             form_data['SeniorCitizen'] = 1 if senior_citizen == '1' else 0
             
-            # Encode categorical variables
             encoder = model_data['encoder']
             input_encoded = []
             
-            # Create input array with validation
             for feature in model_data['feature_names']:
                 value = form_data.get(feature)
                 if feature in categorical_fields:
                     try:
                         value = encoder.transform([value])[0]
                     except Exception:
-                        # Log the unknown category
                         app.logger.warning(f"Unknown category '{value}' for feature '{feature}'")
                         value = 0
                 input_encoded.append(value)
             
-            # Make prediction
             prediction = model_data['model'].predict([input_encoded])[0]
             probability = model_data['model'].predict_proba([input_encoded])[0][1]
             
-            # Inside your predict route after making the prediction
             explanation = explain_prediction(probability, form_data, model_data.get('feature_importance'))
             retention_plan = generate_retention_plan(probability, form_data, explanation)
             customer_email = generate_customer_email(probability, form_data)
 
-            # Then include these in your template rendering
             return render_template('predict.html',
                                 features=model_data.get('feature_names', []),
                                 prediction=prediction,
@@ -323,7 +301,6 @@ def predict():
                                 customer_email=customer_email)
                                  
         except ValueError as e:
-            # Handle validation errors
             return render_template('predict.html',
                                  features=model_data.get('feature_names', []),
                                  error=str(e),
@@ -331,7 +308,6 @@ def predict():
                                  probability=None,
                                  form_data=form_data)
         except Exception as e:
-            # Handle unexpected errors
             app.logger.error(f"Prediction error: {str(e)}")
             return render_template('predict.html',
                                  features=model_data.get('feature_names', []),
@@ -339,52 +315,35 @@ def predict():
                                  prediction=None,
                                  probability=None,
                                  form_data=form_data)
-    # GET request - show empty form
-    try:
-        with open('trained_model.pkl', 'rb') as file:
-            model_data = pickle.load(file)
-        return render_template('predict.html', features=model_data['feature_names'], probability=None)
-    except Exception as e:
-        return render_template('predict.html', 
-                             error="Model not found. Please train the model first.",
-                             probability=None)
-
 
 
 @app.route('/analyze', methods=['GET'])
 def analyze():
     """Perform data analysis"""
     df = load_and_process_data()
-    
-    # Generate EDA plots
     plots = {}
     
-    # Senior Citizens distribution
     plt.figure(figsize=(10, 5))
     plt.pie(df["SeniorCitizen"].value_counts(), autopct="%.1f%%", labels=["No", "Yes"])
     plt.title("Distribution of Senior Citizens")
     plots['senior_citizens'] = create_plot()
     
-    # Churn distribution
     plt.figure(figsize=(10, 5))
     sns.countplot(data=df, x="Churn")
     plt.title("Distribution of Churn")
     plots['churn_distribution'] = create_plot()
     
-    # Contract Type Distribution
     plt.figure(figsize=(10, 5))
     sns.countplot(data=df, x="Contract", hue="Churn")
     plt.title("Churn by Contract Type")
     plt.xticks(rotation=45)
     plots['contract_distribution'] = create_plot()
     
-    # Monthly Charges Distribution
     plt.figure(figsize=(10, 5))
     sns.boxplot(data=df, x="Churn", y="MonthlyCharges")
     plt.title("Monthly Charges by Churn Status")
     plots['monthly_charges'] = create_plot()
     
-    # Calculate statistics
     stats = {
         'total_customers': len(df),
         'churn_rate': len(df[df["Churn"]=="Yes"]) / len(df) * 100,
@@ -401,15 +360,12 @@ def analyze():
 def train_models():
     """Train and evaluate models"""
     try:
-        # Load and process data
         df = load_and_process_data()
 
-        # Encode categorical variables
         encoder = LabelEncoder()
         for feature in df.select_dtypes(include='object').columns:
             df[feature] = encoder.fit_transform(df[feature])
 
-        # Feature selection
         X = df.drop("Churn", axis=1)
         y = df["Churn"]
 
@@ -418,16 +374,13 @@ def train_models():
         selected_features = X.columns[select_feature.get_support()]
         X = X[selected_features]
 
-        # Balance dataset
         smote = SMOTEENN(random_state=42)
         X_balanced, y_balanced = smote.fit_resample(X, y)
 
-        # Split data
         X_train, X_test, y_train, y_test = train_test_split(
             X_balanced, y_balanced, test_size=0.2, random_state=42
         )
 
-        # Train models and get results
         results = []
         models = {
             "Random Forest": RandomForestClassifier(random_state=42),
@@ -443,11 +396,9 @@ def train_models():
             results.append(metrics)
             model_accuracies[model_name] = metrics['validation_accuracy']
 
-        # Select best model
         best_model_name = max(model_accuracies, key=model_accuracies.get)
         best_model = models[best_model_name]
 
-        # Save model data
         model_data = {
             'model': best_model,
             'feature_names': selected_features.tolist(),
@@ -458,17 +409,14 @@ def train_models():
         with open('trained_model.pkl', 'wb') as file:
             pickle.dump(model_data, file)
 
-        # Generate overall visualizations
         plots = {}
 
-        # Model Accuracies Comparison
         plt.figure(figsize=(10, 5))
         sns.barplot(x=list(model_accuracies.keys()), y=list(model_accuracies.values()))
         plt.ylabel('Accuracy')
         plt.title('Model Accuracies Comparison')
         plots['model_accuracies_plot'] = create_plot()
 
-        # ROC Curve
         plt.figure(figsize=(10, 5))
         for model_name, model in models.items():
             from sklearn.metrics import roc_curve, auc
@@ -484,7 +432,6 @@ def train_models():
         plt.legend()
         plots['roc_curves_plot'] = create_plot()
 
-        # Precision-Recall Curve
         plt.figure(figsize=(10, 5))
         for model_name, model in models.items():
             from sklearn.metrics import precision_recall_curve
@@ -503,7 +450,8 @@ def train_models():
     except Exception as e:
         return jsonify({'error': True, 'message': str(e)}), 400
 
-app = app 
+# Explicit handler mapping for Vercel Serverless WSGI
+app = app
 
 if __name__ == '__main__':
     app.run(debug=True)
